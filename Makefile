@@ -1,2 +1,2 @@
 build:
-	gcc main.c tcp.c -o http
+	gcc main.c tcp.c http.c -o http

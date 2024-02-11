@@ -8,6 +8,7 @@
 #include <netinet/in.h>
 #include <netdb.h>
 
+#include "http.h"
 #include "tcp.h"
 
 int main(void)
@@ -20,9 +21,9 @@ int main(void)
 
 	char connection_address[INET6_ADDRSTRLEN];
 
-	char test_response[] = "HTTP/1.1 200 OK\nDate: Sat, 10 Feb 2024 16:15:55 EST\nETag: \"123-a\"\nContent-Length: 12\nVary: Accept-Encoding\nContent-Type: text/plain\n\nHello World!\n";
-
 	setup_tcp_server(&sockfd);
+
+	char* response = generate_http_message(HTTP_OK, "text/plain", "Hello, world!");
 
 	while (1) { // main accept loop
 		sin_size = sizeof(their_addr);
@@ -40,7 +41,7 @@ int main(void)
 		if (!fork()) { // this is the child process
 			close(sockfd); // child doesn't need the listener
 			
-			err = send(new_fd, test_response, strlen(test_response), 0);
+			err = send(new_fd, response, strlen(response), 0);
 			if (err == -1)
 				perror("send");
 
@@ -51,6 +52,8 @@ int main(void)
 
 		close(new_fd);
 	}
+
+	free(response);
 
 	return 0;
 }

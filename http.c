@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <time.h>
 
+#include "_defines.h"
 #include "http.h"
 
 #define DATE_LEN 35
@@ -11,29 +13,29 @@ const char* month_tostr(int mon)
 {
 	switch (mon) {
 		case 0:
-			return "January";
+			return "Jan";
 		case 1:
-			return "Febuary";
+			return "Feb";
 		case 2:
-			return "March";
+			return "Mar";
 		case 3:
-			return "April";
+			return "Apr";
 		case 4:
 			return "May";
 		case 5:
-			return "June";
+			return "Jun";
 		case 6:
-			return "July";
+			return "Jul";
 		case 7:
-			return "August";
+			return "Aug";
 		case 8:
-			return "September";
+			return "Sep";
 		case 9:
-			return "October";
+			return "Oct";
 		case 10:
-			return "November";
+			return "Nov";
 		case 11:
-			return "December";
+			return "Dec";
 		default:
 			return "";
 	}
@@ -79,13 +81,25 @@ char* get_date()
 	return date;
 }
 
-void generate_http_message(enum RESPONSE_CODES reponse_code, const char* media_type)
+char* generate_http_message(enum RESPONSE_CODES response_code, const char* content_type, const char* body)
 {
+	char* ret;
+	char* date;
+	const char* etag;
+	int err;
+	size_t body_len;
+
 	/**
 	 * This is assuming a GET request
 	 */
 
-	char* date = get_date();
+
+	// just using the revision number because I don't really have any need to differentiate for now
+	etag = VERSION_NUMBER;
+
+	date = get_date();
+
+	body_len = strlen(body);
 
 
 	/**
@@ -99,7 +113,17 @@ void generate_http_message(enum RESPONSE_CODES reponse_code, const char* media_t
 	 * body here!!!
 	 */
 
+	err = asprintf(&ret, "HTTP/1.1 %d OK\n"
+			"Date: %s\n"
+			"ETag: %s\n"
+			"Content-Length: %lu\n"
+			"Vary: Accept-Encoding\n"
+			"Content-Type: %s\n"
+		        "\n"
+			"%s", 
+			response_code, date, etag, body_len, content_type, body);	
 
 	free(date);
 
+	return ret;
 }
