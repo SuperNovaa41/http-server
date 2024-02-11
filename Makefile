@@ -11,7 +11,7 @@ $(TARGET): $(OBJ)
 
 main.o: tcp.h http.h file.h
 tcp.o: tcp.h
-http.o: http.h
+http.o: http.h _defines.h
 file.o: file.h
 
 .PHONY: clean
