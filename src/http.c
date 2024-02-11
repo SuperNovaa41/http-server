@@ -6,9 +6,6 @@
 #include "_defines.h"
 #include "http.h"
 
-#define DATE_LEN 35
-
-
 const char* month_tostr(int mon)
 {
 	switch (mon) {

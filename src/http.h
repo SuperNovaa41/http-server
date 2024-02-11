@@ -1,6 +1,9 @@
 #ifndef HTTP_H
 #define HTTP_H
 
+#define DATE_LEN 35
+#define MAXDATALEN 1000
+
 enum RESPONSE_CODES {
 	HTTP_OK = 200,
 };

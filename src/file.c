@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#include "file.h"
+
 char* read_file(const char* filename)
 {
 	char* ret;

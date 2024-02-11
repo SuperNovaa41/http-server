@@ -44,6 +44,8 @@ int main(void)
 		if (!fork()) { // this is the child process
 			close(sockfd); // child doesn't need the listener
 			
+			
+			
 			err = send(new_fd, response, strlen(response), 0);
 			if (err == -1)
 				perror("send");
