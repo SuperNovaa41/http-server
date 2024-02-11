@@ -24,7 +24,7 @@ char* read_file(const char* filename)
 
 
 	/* allocate the memory */
-	ret = calloc(1, file_size + 1);
+	ret = malloc(sizeof(char) * (file_size + 1));
 	if (!ret) {
 		fclose(f);
 		fputs("memory alloc fail\n", stderr);

@@ -25,10 +25,8 @@ int main(void)
 	setup_tcp_server(&sockfd);
 
 	char* body = read_file("./html/index.html");
-
 	char* response = generate_http_message(HTTP_OK, "text/html", body);
-
-	puts(response);
+	free(body);
 
 	while (1) { // main accept loop
 		sin_size = sizeof(their_addr);
