@@ -23,7 +23,11 @@ int main(void)
 
 	setup_tcp_server(&sockfd);
 
-	char* response = generate_http_message(HTTP_OK, "text/plain", "Hello, world!");
+	const char* body = "<!DOCTYPE html><html><head><title>Test</title></head><body><h1>Test</h1><p>test</p></body></html>";
+
+	char* response = generate_http_message(HTTP_OK, "text/html", body);
+
+	puts(response);
 
 	while (1) { // main accept loop
 		sin_size = sizeof(their_addr);
