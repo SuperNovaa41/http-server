@@ -81,7 +81,7 @@ char* get_date()
 	return date;
 }
 
-char* generate_http_message(enum RESPONSE_CODES response_code, const char* content_type, const char* body)
+char* generate_http_message(enum RESPONSE_CODES response_code, const char* content_type, char* body)
 {
 	char* ret;
 	char* date;

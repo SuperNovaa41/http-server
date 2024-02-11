@@ -8,6 +8,7 @@
 #include <netinet/in.h>
 #include <netdb.h>
 
+#include "file.h"
 #include "http.h"
 #include "tcp.h"
 
@@ -23,7 +24,7 @@ int main(void)
 
 	setup_tcp_server(&sockfd);
 
-	const char* body = "<!DOCTYPE html><html><head><title>Test</title></head><body><h1>Test</h1><p>test</p></body></html>";
+	char* body = read_file("./html/index.html");
 
 	char* response = generate_http_message(HTTP_OK, "text/html", body);
 
