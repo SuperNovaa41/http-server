@@ -1,3 +1,4 @@
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -61,7 +62,7 @@ const char* week_day_tostr(int wday)
 
 }
 
-
+// Result must be free'd
 char* get_date()
 {
 	time_t t = time(NULL);
@@ -123,4 +124,18 @@ char* generate_http_message(enum RESPONSE_CODES response_code, const char* conte
 	free(date);
 
 	return ret;
+}
+
+const char* parse_http_request(char* request)
+{
+	const char* index;
+	char* tok;
+
+	// this is the type
+	strtok(request, " ");
+
+	// this is the path
+	index = strtok(NULL, " ");
+
+	return index;
 }

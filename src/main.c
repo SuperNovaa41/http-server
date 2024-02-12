@@ -17,16 +17,16 @@ int main(void)
 	int sockfd, new_fd; 
 	struct sockaddr_storage their_addr; 
 	socklen_t sin_size;
+	
+	char *body, *response, *request;
+	char *actualfilepath;
+	const char* filepath;
 
 	int err;
 
 	char connection_address[INET6_ADDRSTRLEN];
 
 	setup_tcp_server(&sockfd);
-
-	char* body = read_file("../html/index.html");
-	char* response = generate_http_message(HTTP_OK, "text/html", body);
-	free(body);
 
 	while (1) { // main accept loop
 		sin_size = sizeof(their_addr);
@@ -41,11 +41,22 @@ int main(void)
 				connection_address, sizeof(connection_address));
 		printf("server: got connection from %s\n", connection_address);
 
+		request = recv_msg(&new_fd);
+		filepath = parse_http_request(request);
+		puts(filepath);
+
+		asprintf(&actualfilepath, "../html%s/index.html", filepath);
+
+		body = read_file(actualfilepath);
+		response = generate_http_message(HTTP_OK, "text/html", body);
+	
+		free(body);
+		free(request);
+
+
 		if (!fork()) { // this is the child process
 			close(sockfd); // child doesn't need the listener
-			
-			
-			
+
 			err = send(new_fd, response, strlen(response), 0);
 			if (err == -1)
 				perror("send");
@@ -54,11 +65,11 @@ int main(void)
 			close(new_fd);
 			exit(0);
 		}
-
 		close(new_fd);
+
+		free(response);
 	}
 
-	free(response);
 
 	return 0;
 }

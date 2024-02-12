@@ -2,6 +2,7 @@
 #define TCP_H
 
 #define PORT "3490" 
+#define MAXDATALEN 100
 
 #define BACKLOG 10 // the amount of pending connections the queue will hold
 
@@ -38,4 +39,6 @@ void setup_socket(struct addrinfo* servinfo, int* sockfd);
  */
 void setup_tcp_server(int* sockfd);
 
+
+char* recv_msg(int* sockfd);
 #endif

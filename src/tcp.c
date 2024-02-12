@@ -119,4 +119,20 @@ void setup_tcp_server(int* sockfd)
 	printf("server: waiting for connections...\n");
 }
 
+char* recv_msg(int* sockfd)
+{
+	char* ret;
+	int numbytes;
+
+	ret = malloc(sizeof(char) * MAXDATALEN);
+
+	numbytes = recv((*sockfd), ret, MAXDATALEN - 1, 0);
+	if (numbytes == -1) {
+		perror("recv");
+		exit(EXIT_FAILURE);
+	}
+	ret[numbytes] = '\0';
+
+	return ret;
+}
 
