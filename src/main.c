@@ -8,7 +8,6 @@
 #include <netinet/in.h>
 #include <netdb.h>
 
-#include "file.h"
 #include "http.h"
 #include "tcp.h"
 
@@ -18,9 +17,7 @@ int main(void)
 	struct sockaddr_storage their_addr; 
 	socklen_t sin_size;
 	
-	char *body, *response, *request;
-	char *actualfilepath;
-	const char* filepath;
+	char *response, *request;
 
 	int err;
 
@@ -42,17 +39,8 @@ int main(void)
 		printf("server: got connection from %s\n", connection_address);
 
 		request = recv_msg(&new_fd);
-		filepath = parse_http_request(request);
-		puts(filepath);
-
-		asprintf(&actualfilepath, "../html%s/index.html", filepath);
-
-		body = read_file(actualfilepath);
-		response = generate_http_message(HTTP_OK, "text/html", body);
-	
-		free(body);
+		generate_http_response(request, &response);
 		free(request);
-
 
 		if (!fork()) { // this is the child process
 			close(sockfd); // child doesn't need the listener

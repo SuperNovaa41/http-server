@@ -5,17 +5,15 @@
 
 #include "file.h"
 
-char* read_file(const char* filename)
+int read_file(const char* filename, char** buf)
 {
-	char* ret;
 	int err;
 	FILE* f;
 	long file_size;
 
 	err = access(filename, F_OK);
 	if (err != 0) {
-		fprintf(stderr, "File does not exist!\n");
-		exit(EXIT_FAILURE);
+		return -1;
 	}
 
 	f = fopen(filename, "rb");
@@ -26,21 +24,21 @@ char* read_file(const char* filename)
 
 
 	/* allocate the memory */
-	ret = malloc(sizeof(char) * (file_size + 1));
-	if (!ret) {
+	*buf = malloc(sizeof(char) * (file_size + 1));
+	if (!(*buf)) {
 		fclose(f);
 		fputs("memory alloc fail\n", stderr);
 		exit(EXIT_FAILURE);
 	}
 
-	err = fread(ret, file_size, 1, f);
+	err = fread((*buf), file_size, 1, f);
 	if (err != 1) {
 		fclose(f);
-		free(ret);
+		free((*buf));
 		fputs("reading file failed\n", stderr);
-		exit(EXIT_FAILURE);
+		return -1;
 	}
 
 	fclose(f);
-	return ret;
+	return 0;
 }

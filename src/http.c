@@ -1,4 +1,3 @@
-#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -6,6 +5,7 @@
 
 #include "_defines.h"
 #include "http.h"
+#include "file.h"
 
 const char* month_tostr(int mon)
 {
@@ -126,10 +126,13 @@ char* generate_http_message(enum RESPONSE_CODES response_code, const char* conte
 	return ret;
 }
 
-const char* parse_http_request(char* request)
+void generate_http_response(char* request, char** response)
 {
-	const char* index;
-	char* tok;
+	char* index;
+	char *filepath, *filecontent;
+	enum RESPONSE_CODES response_code;
+
+	int err;
 
 	// this is the type
 	strtok(request, " ");
@@ -137,5 +140,32 @@ const char* parse_http_request(char* request)
 	// this is the path
 	index = strtok(NULL, " ");
 
-	return index;
+
+	/** First we generate the filename, and then read the file **/
+	/**
+	 * TODO: this obviously needs to be changed
+	 * this doesn't account for any edge cases at all
+	 * this will ONLY work for links such as <host>/ <host>/page/, etc
+	 */
+	asprintf(&filepath, "%s%s/index.html", HTML_SRC, index);
+
+	err = read_file(filepath, &filecontent);
+	if (err == -1) {
+		response_code = HTTP_NOT_FOUND;
+		/**
+		 * we want to force load the 404 file now
+		 *
+		 * since this is an optional file, im gonna say we just bundle this in to the install by default so that it can be set in config without throwing errors
+		 *
+		 * also throwing away the error because the location is hardcoded (either through config or default value)
+		 */
+		read_file(NOTFOUNDFILE, &filecontent);
+	} else {
+	 	response_code = HTTP_OK;
+	}
+		
+	(*response) = generate_http_message(response_code, "text/html", filecontent);
+
+	free(filecontent);
+	free(filepath);
 }

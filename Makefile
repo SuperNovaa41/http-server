@@ -6,7 +6,7 @@ OBJ = main.o tcp.o http.o file.o
 
 $(TARGET): $(OBJ)
 	mkdir -p build
-	$(CC) -o $(TARGET) $(OBJ)
+	$(CC) -o $(TARGET) $(OBJ) -g
 	mv $(TARGET) build/
 
 main.o: tcp.h http.h file.h
