@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdio.h>
 
+#include "http.h"
 #include "string_helpers.h"
 
 const char* month_tostr(int mon)
@@ -81,8 +82,11 @@ char* compare_ext_to_mime(const char* ext)
 	}
 
 	line = NULL;
+
+	ext++; // step past the first character
+	
 	while ((nread = getline(&line, &len, f)) != -1) {
-		mime = strtok(line, " "); // this is the mime type
+		mime = strtok(line, " ");
 		tok = strtok(NULL, " ");
 		while (tok != NULL) {
 			if (strcmp(tok, ext) == 0) {
@@ -95,6 +99,10 @@ char* compare_ext_to_mime(const char* ext)
 			break;
 	}
 	fclose(f);
+	
+	if (br != 1)
+		return DEFAULT_MIME_TYPE;
+
 
 	out = malloc(sizeof(char) * strlen(mime));
 	strncpy(out, mime, strlen(mime) + 1);

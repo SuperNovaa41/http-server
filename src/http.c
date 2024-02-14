@@ -178,6 +178,8 @@ void generate_http_response(char* request, char** response)
 	else if (method == HTTP_METHOD_HEAD)
 		(*response) = generate_http_headers(response_code, &file);
 
+	puts(*response);
+
 	free(file.content);
 	free(file.mime_type);
 
