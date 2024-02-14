@@ -89,19 +89,7 @@ char* generate_http_message(enum RESPONSE_CODES response_code, struct response_f
 
 	// just using the revision number because I don't really have any need to differentiate for now
 	etag = VERSION_NUMBER;
-
 	date = get_date();
-
-	/**
-	 * HTTP/1.1 200 OK <- response_code
-	 * Date:  <- need to generate the date
-	 * ETag: <- no idea
-	 * Content-Length: <- need the body length
-	 * Vary: Accept-Encoding
-	 * Content-Type: <- defaults to text/plain
-	 *
-	 * body here!!!
-	 */
 
 	err = asprintf(&ret, "HTTP/1.1 %d OK\n"
 			"Date: %s\n"
@@ -119,12 +107,12 @@ char* generate_http_message(enum RESPONSE_CODES response_code, struct response_f
 }
 
 
-// TODO use mime.types file to find each file type that will associate the mime type
 enum RESPONSE_CODES setup_file(struct response_file* file, char* filepath)
 {
 	int err;
 	enum RESPONSE_CODES ret;
-
+	
+	// TODO use mime.types file to find each file type that will associate the mime type
 	file->mime_type = "text/html";
 
 	if (strcmp(filepath, "") == 0) {
@@ -136,13 +124,8 @@ enum RESPONSE_CODES setup_file(struct response_file* file, char* filepath)
 	err = read_file(filepath, &(file->content));
 	if (err == -1) {
 		ret = HTTP_NOT_FOUND;
-		/**
-		 * we want to force load the 404 file now
-		 *
-		 * since this is an optional file, im gonna say we just bundle this in to the install by default so that it can be set in config without throwing errors
-		 *
-		 * also throwing away the error because the location is hardcoded (either through config or default value)
-		 */
+	
+		// force load the 404 file
 		read_file(NOTFOUNDFILE, &(file->content));
 	} else {
 	 	ret = HTTP_OK;
@@ -153,7 +136,19 @@ enum RESPONSE_CODES setup_file(struct response_file* file, char* filepath)
 	return HTTP_OK;
 }
 
+const char* get_mime_type(char* index)
+{
+	char* file = strrchr(index, '/');
+	if (file == NULL) 
+		return "";
+	char* ext = strrchr(++file, '.');
+	if (ext == NULL)
+		return "";
 
+	if (strcmp("html", ext) == 0)
+		return "text/html";
+	return "text/plain";
+}
 
 void generate_http_response(char* request, char** response)
 {
@@ -177,6 +172,8 @@ void generate_http_response(char* request, char** response)
 
 	// this is the path
 	index = strtok(NULL, " ");
+
+	parse_index(index);
 
 	/** First we generate the filename, and then read the file **/
 	/**
