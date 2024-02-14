@@ -3,7 +3,10 @@
 
 #define DATE_LEN 35
 
-#define DEFAULT_MIME_TYPE "applcation/octet-stream"
+/**
+ * According to RFC 2616, this is the default MIME type when the type cannot be determined
+ */
+#define DEFAULT_MIME_TYPE "application/octet-stream"
 
 /**
  * struct response_file

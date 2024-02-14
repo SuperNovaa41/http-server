@@ -1,1 +1,38 @@
-text/html html
+text/html html htm
+text/css css
+text/csv csv
+text/javascript j
+text/plain txt
+audio/aac aac
+audio/midi mid midi
+audio/mpeg mp3
+audio/ogg oga
+audio/opus opus
+audio/wav wav
+audio/webm weba
+image/webp webp
+image/apng apng
+image/avif avif
+image/bmp bmp
+image/vnd.microsoft.icon ico
+image/jpeg jpeg jpg
+image/png png
+image/tiff tif tiff
+image/svg+xml svg
+video/x-msvideo avi
+video/mp4 mp4
+video/mpeg mpeg
+video/ogg ogv
+video/webm webm
+applicatoin/octet-stream bin
+application/x-bzip bz
+application/x-bzip2 bz2
+application/gzip gz 
+application/x-tar tar
+application/java-archive jar
+application/json json
+application/pdf pdf
+application/x-sh sh
+application/xml xml
+application/zip zip
+application/x-7z-compressed 7z
