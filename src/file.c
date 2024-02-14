@@ -12,9 +12,8 @@ int read_file(const char* filename, char** buf)
 	long file_size;
 
 	err = access(filename, F_OK);
-	if (err != 0) {
+	if (err != 0)
 		return -1;
-	}
 
 	f = fopen(filename, "rb");
 

@@ -9,19 +9,12 @@
 #include "http.h"
 #include "file.h"
 
-/**
- * Generates the date string that HTTP requires
- *
- *
- * Result must be free'd
- */
 char* get_date()
 {
 	time_t t = time(NULL);
 	struct tm tm = *localtime(&t);
 	char* date;
 
-		
 	date = malloc(sizeof(char) * DATE_LEN);
 	
 	snprintf(date, DATE_LEN, "%s, %02d %s %d %02d:%02d:%02d %s",
@@ -31,9 +24,6 @@ char* get_date()
 	return date;
 }
 
-/**
- * Creates the headers and message we will be sending via HTTP
- */
 char* generate_http_message(enum RESPONSE_CODES response_code, struct response_file* file)
 {
 	char* ret;
@@ -57,20 +47,15 @@ char* generate_http_message(enum RESPONSE_CODES response_code, struct response_f
 			response_code, date, etag, file->filelen, file->mime_type, file->content);	
 
 	free(date);
-
 	return ret;
 }
 
-/**
- * Initializes the file we will be sending in the HTTP response
- */
 enum RESPONSE_CODES setup_file(struct response_file* file, char* filepath)
 {
 	int err;
 	enum RESPONSE_CODES ret;
 	
-	// TODO use mime.types file to find each file type that will associate the mime type
-	file->mime_type = "text/html";
+	file->mime_type = get_mime_type(filepath);
 
 	if (strcmp(filepath, "") == 0) {
 		file->content = "";
@@ -89,17 +74,9 @@ enum RESPONSE_CODES setup_file(struct response_file* file, char* filepath)
 	}
 
 	file->filelen = strlen(file->content);
-
 	return ret;
 }
 
-/**
- *
- *
- * Gets the mime type of the file(path)
- *
- * TODO: check this against the mime.types file
- */
 char* get_mime_type(char* index)
 {
 	char *file, *ext;
@@ -130,9 +107,6 @@ bool add_implicit_index()
 	return false;
 }
 
-/**
- * Generates an HTTP response
- */
 void generate_http_response(char* request, char** response)
 {
 	char *index, *type;
@@ -174,5 +148,7 @@ void generate_http_response(char* request, char** response)
 	(*response) = generate_http_message(response_code, &file);
 
 	free(file.content);
+	free(file.mime_type);
+
 	free(filepath);
 }
