@@ -3,7 +3,7 @@
 
 #define DATE_LEN 35
 
-#define DEFAULT_MIME_TYPE "text/plain"
+#define DEFAULT_MIME_TYPE "applcation/octet-stream"
 
 /**
  * struct response_file
@@ -25,10 +25,32 @@ struct response_file {
  * possible HTTP response codes
  */
 enum RESPONSE_CODES {
-	HTTP_OK = 200,
-	HTTP_NOT_FOUND = 404,
-	HTTP_NOT_IMPLEMENTED = 501,
+	HTTP_RESPONSE_OK = 200,
+	HTTP_RESPONSE_NOT_FOUND = 404,
+	HTTP_RESPONSE_NOT_IMPLEMENTED = 501,
 };
+
+/**
+ * enum HTTP_METHODS
+ *
+ * The implemented HTTP methods
+ */
+enum HTTP_METHODS {
+	HTTP_METHOD_GET,
+	HTTP_METHOD_HEAD,
+	HTTP_METHOD_NOT_IMPLEMENTED,
+};
+
+/**
+ * char* generate_http_headers
+ *
+ * enum RESPONSE_CODES response_code - The response code we're sending with the http response
+ * struct response_file* file - The struct containing file information
+ *
+ * This function will take the given file information and reponse code and generate
+ * the required HTTP headers according to the HTTP1.1 RFC syntax
+ */
+char* generate_http_headers(enum RESPONSE_CODES response_code, struct response_file* file);
 
 /**
  * char* generate_http_message
@@ -37,7 +59,8 @@ enum RESPONSE_CODES {
  * struct response_file* file - The struct containing file information
  *
  * This function will take the given file information, along with the response code
- * and generate an HTTP response following the proper HTTP/1.1 RFC syntax
+ * and add the body content to the generated HTTP headers (from generate_http_headers)
+ * following the proper HTTP1.1 RFC syntax
  *
  * Result must be free'd
  * 
@@ -76,6 +99,15 @@ char* get_mime_type(char* index);
  * Generates a date string in proper syntax accroding to the HTML/1.1 RFC
  */
 char* get_date();
+
+/**
+ * enum HTTP_METHODS get_method
+ *
+ * char* type - The request type
+ *
+ * Parses the request method and returns the enum HTTP_METHODS version
+ */
+enum HTTP_METHODS get_method(char* type);
 
 /**
  * enum RESPONSE_CODES setup_file

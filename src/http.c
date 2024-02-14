@@ -24,15 +24,13 @@ char* get_date()
 	return date;
 }
 
-char* generate_http_message(enum RESPONSE_CODES response_code, struct response_file* file)
+char* generate_http_headers(enum RESPONSE_CODES response_code, struct response_file* file)
 {
-	char* ret;
-	char* date;
+	char *ret, *date;
 	const char* etag;
 	int err;
 	size_t body_len;
 
-	// just using the revision number because I don't really have any need to differentiate for now
 	etag = VERSION_NUMBER;
 	date = get_date();
 
@@ -41,12 +39,37 @@ char* generate_http_message(enum RESPONSE_CODES response_code, struct response_f
 			"ETag: %s\n"
 			"Content-Length: %lu\n"
 			"Vary: Accept-Encoding\n"
-			"Content-Type: %s\n"
-		        "\n"
-			"%s", 
-			response_code, date, etag, file->filelen, file->mime_type, file->content);	
+			"Content-Type: %s\n",
+			response_code, date, etag, file->filelen, file->mime_type);
+
+	if (err == -1) {
+		perror("asprintf");
+		exit(EXIT_FAILURE);
+	}
 
 	free(date);
+	return ret;
+
+}
+
+char* generate_http_message(enum RESPONSE_CODES response_code, struct response_file* file)
+{
+	char* ret;
+	char* headers;
+	int err;
+
+	headers = generate_http_headers(response_code, file);
+	err =  asprintf(&ret, "%s"
+		        "\n"
+			"%s", 
+			headers, file->content);	
+
+	if (err == -1) {
+		perror("asprintf");
+		exit(EXIT_FAILURE);
+	}
+
+	free(headers);
 	return ret;
 }
 
@@ -60,17 +83,17 @@ enum RESPONSE_CODES setup_file(struct response_file* file, char* filepath)
 	if (strcmp(filepath, "") == 0) {
 		file->content = "";
 		file->filelen = 0;
-		return HTTP_NOT_IMPLEMENTED;
+		return HTTP_RESPONSE_NOT_IMPLEMENTED;
 	}
 
 	err = read_file(filepath, &(file->content));
 	if (err == -1) {
-		ret = HTTP_NOT_FOUND;
+		ret = HTTP_RESPONSE_NOT_FOUND;
 	
 		// force load the 404 file
 		read_file(NOTFOUNDFILE, &(file->content));
 	} else {
-	 	ret = HTTP_OK;
+	 	ret = HTTP_RESPONSE_OK;
 	}
 
 	file->filelen = strlen(file->content);
@@ -81,6 +104,10 @@ char* get_mime_type(char* index)
 {
 	char *file, *ext;
 	char* out;
+
+	if (strcmp(index, "") == 0) {
+		return DEFAULT_MIME_TYPE;
+	}
 
 	file = strrchr(index, '/');
 	if (file == NULL) 
@@ -97,14 +124,14 @@ char* get_mime_type(char* index)
 	return out;
 }
 
-/**
- * 
- *
- * This function will add the index.html if it is not already found (assuming that this is JUST a folder path, and not another file)
- */
-bool add_implicit_index()
+enum HTTP_METHODS get_method(char* type)
 {
-	return false;
+	if (strcmp(type, "GET") == 0)
+		return HTTP_METHOD_GET;
+	else if (strcmp(type, "HEAD") == 0)
+		return HTTP_METHOD_HEAD;
+	else
+	 	return HTTP_METHOD_NOT_IMPLEMENTED;
 }
 
 void generate_http_response(char* request, char** response)
@@ -113,17 +140,18 @@ void generate_http_response(char* request, char** response)
 	char *filepath, *filecontent;
 
 	enum RESPONSE_CODES response_code;
+	enum HTTP_METHODS method;
 	struct response_file file;
 
 	int err;
 
 	type = strtok(request, " ");
 
-	/**
-	 * The server ONLY implements GET for now
-	 */
-	if (strcmp(type, "GET") != 0) {
-		(*response) = generate_http_message(HTTP_NOT_IMPLEMENTED, &file);	
+	method = get_method(type);
+
+	if (method == HTTP_METHOD_NOT_IMPLEMENTED) {
+		response_code = setup_file(&file, "");
+		(*response) = generate_http_message(response_code, &file);	
 		return;
 	}
 
@@ -145,7 +173,10 @@ void generate_http_response(char* request, char** response)
 
 	response_code = setup_file(&file, filepath);
 
-	(*response) = generate_http_message(response_code, &file);
+	if (method == HTTP_METHOD_GET)
+		(*response) = generate_http_message(response_code, &file);
+	else if (method == HTTP_METHOD_HEAD)
+		(*response) = generate_http_headers(response_code, &file);
 
 	free(file.content);
 	free(file.mime_type);
