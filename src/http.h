@@ -6,6 +6,7 @@
 enum RESPONSE_CODES {
 	HTTP_OK = 200,
 	HTTP_NOT_FOUND = 404,
+	HTTP_NOT_IMPLEMENTED = 501,
 };
 
 // result must be free'd

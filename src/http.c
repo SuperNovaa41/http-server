@@ -128,18 +128,29 @@ char* generate_http_message(enum RESPONSE_CODES response_code, const char* conte
 
 void generate_http_response(char* request, char** response)
 {
-	char* index;
+	char *index, *type;
 	char *filepath, *filecontent;
 	enum RESPONSE_CODES response_code;
 
 	int err;
 
+	puts(request);
+
 	// this is the type
-	strtok(request, " ");
+	type = strtok(request, " ");
+
+	/**
+	 * The server ONLY implements GET for now
+	 */
+	if (strcmp(type, "GET") != 0) {
+		(*response) = generate_http_message(HTTP_NOT_IMPLEMENTED, "", "");	
+		return;
+	}
 
 	// this is the path
 	index = strtok(NULL, " ");
 
+	puts(index);
 
 	/** First we generate the filename, and then read the file **/
 	/**
