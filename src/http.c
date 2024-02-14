@@ -90,7 +90,7 @@ enum RESPONSE_CODES setup_file(struct response_file* file, char* filepath)
 
 	file->filelen = strlen(file->content);
 
-	return HTTP_OK;
+	return ret;
 }
 
 /**
