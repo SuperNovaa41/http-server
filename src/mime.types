@@ -24,7 +24,7 @@ video/mp4 mp4
 video/mpeg mpeg
 video/ogg ogv
 video/webm webm
-applicatoin/octet-stream bin
+application/octet-stream bin
 application/x-bzip bz
 application/x-bzip2 bz2
 application/gzip gz 
