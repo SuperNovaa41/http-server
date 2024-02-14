@@ -79,7 +79,7 @@ char* get_date()
 	return date;
 }
 
-char* generate_http_message(enum RESPONSE_CODES response_code, const char* content_type, char* body)
+char* generate_http_message(enum RESPONSE_CODES response_code, struct response_file* file)
 {
 	char* ret;
 	char* date;
@@ -87,18 +87,10 @@ char* generate_http_message(enum RESPONSE_CODES response_code, const char* conte
 	int err;
 	size_t body_len;
 
-	/**
-	 * This is assuming a GET request
-	 */
-
-
 	// just using the revision number because I don't really have any need to differentiate for now
 	etag = VERSION_NUMBER;
 
 	date = get_date();
-
-	body_len = strlen(body);
-
 
 	/**
 	 * HTTP/1.1 200 OK <- response_code
@@ -119,38 +111,72 @@ char* generate_http_message(enum RESPONSE_CODES response_code, const char* conte
 			"Content-Type: %s\n"
 		        "\n"
 			"%s", 
-			response_code, date, etag, body_len, content_type, body);	
+			response_code, date, etag, file->filelen, file->mime_type, file->content);	
 
 	free(date);
 
 	return ret;
 }
 
+
+// TODO use mime.types file to find each file type that will associate the mime type
+enum RESPONSE_CODES setup_file(struct response_file* file, char* filepath)
+{
+	int err;
+	enum RESPONSE_CODES ret;
+
+	file->mime_type = "text/html";
+
+	if (strcmp(filepath, "") == 0) {
+		file->content = "";
+		file->filelen = 0;
+		return HTTP_NOT_IMPLEMENTED;
+	}
+
+	err = read_file(filepath, &(file->content));
+	if (err == -1) {
+		ret = HTTP_NOT_FOUND;
+		/**
+		 * we want to force load the 404 file now
+		 *
+		 * since this is an optional file, im gonna say we just bundle this in to the install by default so that it can be set in config without throwing errors
+		 *
+		 * also throwing away the error because the location is hardcoded (either through config or default value)
+		 */
+		read_file(NOTFOUNDFILE, &(file->content));
+	} else {
+	 	ret = HTTP_OK;
+	}
+
+	file->filelen = strlen(file->content);
+
+	return HTTP_OK;
+}
+
+
+
 void generate_http_response(char* request, char** response)
 {
 	char *index, *type;
 	char *filepath, *filecontent;
+
 	enum RESPONSE_CODES response_code;
+	struct response_file file;
 
 	int err;
 
-	puts(request);
-
-	// this is the type
 	type = strtok(request, " ");
 
 	/**
 	 * The server ONLY implements GET for now
 	 */
 	if (strcmp(type, "GET") != 0) {
-		(*response) = generate_http_message(HTTP_NOT_IMPLEMENTED, "", "");	
+		(*response) = generate_http_message(HTTP_NOT_IMPLEMENTED, &file);	
 		return;
 	}
 
 	// this is the path
 	index = strtok(NULL, " ");
-
-	puts(index);
 
 	/** First we generate the filename, and then read the file **/
 	/**
@@ -160,23 +186,11 @@ void generate_http_response(char* request, char** response)
 	 */
 	asprintf(&filepath, "%s%s/index.html", HTML_SRC, index);
 
-	err = read_file(filepath, &filecontent);
-	if (err == -1) {
-		response_code = HTTP_NOT_FOUND;
-		/**
-		 * we want to force load the 404 file now
-		 *
-		 * since this is an optional file, im gonna say we just bundle this in to the install by default so that it can be set in config without throwing errors
-		 *
-		 * also throwing away the error because the location is hardcoded (either through config or default value)
-		 */
-		read_file(NOTFOUNDFILE, &filecontent);
-	} else {
-	 	response_code = HTTP_OK;
-	}
-		
-	(*response) = generate_http_message(response_code, "text/html", filecontent);
 
-	free(filecontent);
+	response_code = setup_file(&file, filepath);
+
+	(*response) = generate_http_message(response_code, &file);
+
+	free(file.content);
 	free(filepath);
 }
