@@ -1,68 +1,20 @@
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 
 #include "_defines.h"
+#include "string_helpers.h"
 #include "http.h"
 #include "file.h"
 
-const char* month_tostr(int mon)
-{
-	switch (mon) {
-		case 0:
-			return "Jan";
-		case 1:
-			return "Feb";
-		case 2:
-			return "Mar";
-		case 3:
-			return "Apr";
-		case 4:
-			return "May";
-		case 5:
-			return "Jun";
-		case 6:
-			return "Jul";
-		case 7:
-			return "Aug";
-		case 8:
-			return "Sep";
-		case 9:
-			return "Oct";
-		case 10:
-			return "Nov";
-		case 11:
-			return "Dec";
-		default:
-			return "";
-	}
-}
-
-const char* week_day_tostr(int wday)
-{
-	switch (wday) {
-		case 0:
-			return "Sun";
-		case 1:
-			return "Mon";
-		case 2:
-			return "Tue";
-		case 3:
-			return "Wed";
-		case 4:
-			return "Thu";
-		case 5:
-			return "Fri";
-		case 6:
-			return "Sat";
-		default:
-			return "";
-	}
-
-}
-
-// Result must be free'd
+/**
+ * Generates the date string that HTTP requires
+ *
+ *
+ * Result must be free'd
+ */
 char* get_date()
 {
 	time_t t = time(NULL);
@@ -79,6 +31,9 @@ char* get_date()
 	return date;
 }
 
+/**
+ * Creates the headers and message we will be sending via HTTP
+ */
 char* generate_http_message(enum RESPONSE_CODES response_code, struct response_file* file)
 {
 	char* ret;
@@ -106,7 +61,9 @@ char* generate_http_message(enum RESPONSE_CODES response_code, struct response_f
 	return ret;
 }
 
-
+/**
+ * Initializes the file we will be sending in the HTTP response
+ */
 enum RESPONSE_CODES setup_file(struct response_file* file, char* filepath)
 {
 	int err;
@@ -136,12 +93,21 @@ enum RESPONSE_CODES setup_file(struct response_file* file, char* filepath)
 	return HTTP_OK;
 }
 
+/**
+ *
+ *
+ * Gets the mime type of the file(path)
+ *
+ * TODO: check this against the mime.types file
+ */
 const char* get_mime_type(char* index)
 {
-	char* file = strrchr(index, '/');
+	char *file, *ext;
+
+	file = strrchr(index, '/');
 	if (file == NULL) 
 		return "";
-	char* ext = strrchr(++file, '.');
+	ext = strrchr(++file, '.');
 	if (ext == NULL)
 		return "";
 
@@ -150,6 +116,19 @@ const char* get_mime_type(char* index)
 	return "text/plain";
 }
 
+/**
+ * 
+ *
+ * This function will add the index.html if it is not already found (assuming that this is JUST a folder path, and not another file)
+ */
+bool add_implicit_index()
+{
+	return false;
+}
+
+/**
+ * Generates an HTTP response
+ */
 void generate_http_response(char* request, char** response)
 {
 	char *index, *type;
@@ -172,8 +151,6 @@ void generate_http_response(char* request, char** response)
 
 	// this is the path
 	index = strtok(NULL, " ");
-
-	parse_index(index);
 
 	/** First we generate the filename, and then read the file **/
 	/**
