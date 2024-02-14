@@ -1,3 +1,7 @@
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+
 #include "string_helpers.h"
 
 const char* month_tostr(int mon)
@@ -53,4 +57,49 @@ const char* week_day_tostr(int wday)
 			return "";
 	}
 
+}
+
+char* compare_ext_to_mime(const char* ext)
+{
+	/**
+	 * The layout is (mimetype) (extension) (extension1) (extension2) ...
+	 * text/html html
+	 */
+	FILE* f;
+	char *line, *mime, *tok;
+	char* out;
+
+	size_t len;
+	ssize_t nread;
+
+	int br = 0;
+
+	f = fopen(MIME_TYPES, "r");
+	if (f == NULL) {
+		perror("fopen");
+		exit(EXIT_FAILURE);
+	}
+
+	line = NULL;
+	while ((nread = getline(&line, &len, f)) != -1) {
+		mime = strtok(line, " "); // this is the mime type
+		tok = strtok(NULL, " ");
+		while (tok != NULL) {
+			if (strcmp(tok, ext) == 0) {
+				br = 1;
+				break;	
+			}
+			tok = strtok(NULL, " ");
+		}
+		if (br == 1)
+			break;
+	}
+	fclose(f);
+
+	out = malloc(sizeof(char) * strlen(mime));
+	strncpy(out, mime, strlen(mime) + 1);
+
+	free(line);
+
+	return out;
 }

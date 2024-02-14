@@ -100,9 +100,10 @@ enum RESPONSE_CODES setup_file(struct response_file* file, char* filepath)
  *
  * TODO: check this against the mime.types file
  */
-const char* get_mime_type(char* index)
+char* get_mime_type(char* index)
 {
 	char *file, *ext;
+	char* out;
 
 	file = strrchr(index, '/');
 	if (file == NULL) 
@@ -111,9 +112,12 @@ const char* get_mime_type(char* index)
 	if (ext == NULL)
 		return "";
 
-	if (strcmp("html", ext) == 0)
-		return "text/html";
-	return "text/plain";
+	out = compare_ext_to_mime(ext);
+	if (out == NULL) {
+		out = malloc(sizeof(char) * strlen(DEFAULT_MIME_TYPE));
+		strncpy(out, DEFAULT_MIME_TYPE, strlen(DEFAULT_MIME_TYPE));
+	}
+	return out;
 }
 
 /**
@@ -157,6 +161,10 @@ void generate_http_response(char* request, char** response)
 	 * TODO: this obviously needs to be changed
 	 * this doesn't account for any edge cases at all
 	 * this will ONLY work for links such as <host>/ <host>/page/, etc
+	 *
+	 * this also is processing user input so asprintf is the WRONG choice
+	 *
+	 * (not technically user input, but html headers can be custom made / manipulated to be whatever, so this provides a vector of attack)
 	 */
 	asprintf(&filepath, "%s%s/index.html", HTML_SRC, index);
 

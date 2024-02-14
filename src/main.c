@@ -11,6 +11,8 @@
 #include "http.h"
 #include "tcp.h"
 
+#include "string_helpers.h"
+
 int main(void)
 {
 	int sockfd, new_fd; 

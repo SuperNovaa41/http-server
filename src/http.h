@@ -3,6 +3,8 @@
 
 #define DATE_LEN 35
 
+#define DEFAULT_MIME_TYPE "text/plain"
+
 struct response_file {
 	char* mime_type;
 	char* content;
