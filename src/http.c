@@ -140,7 +140,7 @@ void generate_http_response(char* request, char** response)
 	 *
 	 * (not technically user input, but html headers can be custom made / manipulated to be whatever, so this provides a vector of attack)
 	 */
-	asprintf(&filepath, "%s%s/index.html", HTML_SRC, index);
+	asprintf(&filepath, "%s%s", HTML_SRC, index);
 
 
 	response_code = setup_file(&file, filepath);
