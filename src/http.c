@@ -77,8 +77,7 @@ enum RESPONSE_CODES setup_file(struct response_file* file, char* filepath)
 {
 	int err;
 	enum RESPONSE_CODES ret;
-	
-	file->mime_type = get_mime_type(filepath);
+	char* mime_root;
 
 	if (strcmp(filepath, "") == 0) {
 		file->content = "";
@@ -86,15 +85,29 @@ enum RESPONSE_CODES setup_file(struct response_file* file, char* filepath)
 		return HTTP_RESPONSE_NOT_IMPLEMENTED;
 	}
 
+	file->mime_type = get_mime_type(filepath);
+
+	/**
+	 * If the mime type is not "text/.." we don't want to 
+	 * be reading the file, and just sending it instead
+	 */
+	mime_root = strtok(file->mime_type, "/");
+	if (strcmp(mime_root, "text") != 0) {
+		file->content = "";
+		file->filelen = 0;
+		return HTTP_RESPONSE_OK;
+	}
+
 	err = read_file(filepath, &(file->content));
-	if (err == -1) {
-		ret = HTTP_RESPONSE_NOT_FOUND;
+	if (err == -1) { ret = HTTP_RESPONSE_NOT_FOUND;
 	
 		// force load the 404 file
 		read_file(NOTFOUNDFILE, &(file->content));
 	} else {
 	 	ret = HTTP_RESPONSE_OK;
 	}
+
+	puts(file->content);
 
 	file->filelen = strlen(file->content);
 	return ret;
@@ -179,6 +192,8 @@ void generate_http_response(char* request, char** response)
 		(*response) = generate_http_headers(response_code, &file);
 
 	puts(*response);
+
+	puts(file.content);
 
 	free(file.content);
 	free(file.mime_type);
